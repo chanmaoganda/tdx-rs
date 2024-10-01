@@ -2,7 +2,7 @@ use std::{fs::File, io::{Read, Seek, SeekFrom}, path::Path};
 
 use byteorder::ByteOrder;
 
-use crate::model::{data::DailyData, DayLine};
+use crate::tdx_model::{data::DailyData, DayLine};
 
 const DAY_SIZE: usize = 32;
 

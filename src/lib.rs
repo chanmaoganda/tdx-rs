@@ -1,4 +1,3 @@
-mod model;
-mod maths;
+mod tdx_model;
 
-pub use model::*;
+pub use tdx_model::*;

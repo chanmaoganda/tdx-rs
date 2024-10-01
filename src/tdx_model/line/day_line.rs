@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::model::data::DailyData;
+use crate::tdx_model::data::DailyData;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DayLine {
