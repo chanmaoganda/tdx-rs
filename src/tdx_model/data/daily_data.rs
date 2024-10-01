@@ -21,3 +21,10 @@ impl DailyData {
         }
     }
 }
+
+impl From<DailyData> for (u32, f64, f64, f64, f64) {
+    /// Convert `DailyData` to a tuple of `(date, open, high, low, close)`.
+    fn from(value: DailyData) -> Self {
+        (value.date, value.open, value.high, value.low, value.close)
+    }
+}

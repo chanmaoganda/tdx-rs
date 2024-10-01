@@ -1,4 +1,4 @@
-use crate::{CombinedIndicator, DailyData, ShortIndicator};
+use crate::{CombinedIndicator, DailyData, FullDailyData, ShortIndicator};
 
 use ta::indicators::MovingAverageConvergenceDivergence as MACD;
 use ta::Next;
@@ -35,6 +35,15 @@ pub fn combined_macd(data: &[DailyData]) -> Vec<CombinedIndicator> {
         indicators.push(combined_indicator);
     }
     indicators
+}
+
+pub fn full_data(data: Vec<DailyData>) -> Vec<FullDailyData> {
+    let combined_indicators = combined_macd(data.as_ref());
+    combined_indicators
+        .into_iter()
+        .zip(data)
+        .map(|(indicator, daily_data)| (daily_data, indicator).into())
+        .collect()
 }
 
 #[cfg(test)]
