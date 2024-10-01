@@ -1,0 +1,22 @@
+[package]
+name = "tdx-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["chanmaoganda <avaniawang@outlook.com>"]
+description = "A Rust library for parsing TDX files"
+license = "GPL-3.0"
+repository = "https://github.com/chanmaoganda/tdx-rs"
+
+
+[dependencies]
+anyhow = "1.0.89"
+byteorder = "1.5.0"
+serde = { version = "^1.0", features = ["derive"] }
+# iter_tools = "0.21.0"
+# ta = { version = "0.5.0", optional = true }
+
+[features]
+default = []
+# macd = ["dep:ta"]
+macd = []
+origin_data = []
