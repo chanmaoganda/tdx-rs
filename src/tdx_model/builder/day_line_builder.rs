@@ -8,8 +8,8 @@ const DAY_SIZE: usize = 32;
 
 #[derive(Debug)]
 pub struct DayLineBuilder {
-    file: File,
-    max_days: u64,
+    pub file: File,
+    pub max_days: u64,
 }
 
 impl DayLineBuilder {

@@ -4,9 +4,9 @@ use ta::indicators::MovingAverageConvergenceDivergenceOutput as MACD;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShortIndicator {
-    dif: f64,
-    dea: f64,
-    macd: f64,
+    pub dif: f64,
+    pub dea: f64,
+    pub macd: f64,
 }
 
 /// we prefix macd with a double value to match our need in tdx pattern
@@ -22,12 +22,12 @@ impl From<MACD> for ShortIndicator {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombinedIndicator {
-    dif: f64,
-    dea: f64,
-    macd: f64,
-    dif_2: f64,
-    dea_2: f64,
-    macd_2: f64,
+    pub dif: f64,
+    pub dea: f64,
+    pub macd: f64,
+    pub dif_2: f64,
+    pub dea_2: f64,
+    pub macd_2: f64,
 }
 
 /// we prefix macd with a double value to match our need in tdx pattern
