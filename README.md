@@ -30,8 +30,8 @@ use glob::glob;
 /* 
     Assuming path = "C:/new_tdx/vipdoc/sh/lda"
 */
-let path = format!("{}/*.day", path);
-for entry in glob().expect("Failed to read glob pattern") {
+let glob_path = format!("{}/*.day", path);
+for entry in glob(&glob_path).expect("Failed to read glob pattern") {
     let path = entry?.as_os_str(&path).to_str().unwrap().to_owned();
     files.push(path);
 }
