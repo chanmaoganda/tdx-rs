@@ -39,10 +39,10 @@ impl DayLineBuilder {
         for _ in 0..self.max_days {
             self.file.read_exact(buffer.as_mut()).unwrap();
             let date = byteorder::LE::read_u32(&buffer[0..4]);
-            let open = byteorder::LE::read_u32(&buffer[4..8]) as f32 / 100f32;
-            let high = byteorder::LE::read_u32(&buffer[8..12]) as f32 / 100f32;
-            let low = byteorder::LE::read_u32(&buffer[12..16]) as f32 / 100f32;
-            let close = byteorder::LE::read_u32(&buffer[16..20]) as f32 / 100f32;
+            let open = byteorder::LE::read_u32(&buffer[4..8]) as f64 / 100f64;
+            let high = byteorder::LE::read_u32(&buffer[8..12]) as f64 / 100f64;
+            let low = byteorder::LE::read_u32(&buffer[12..16]) as f64 / 100f64;
+            let close = byteorder::LE::read_u32(&buffer[16..20]) as f64 / 100f64;
             // last 12 bytes consists of 4 bytes of turnover, 4 bytes of volume, and last 4 bytes reserved
             // those bytes are not needed now, so we drop these bytes
             let daily_data = DailyData::new(date, open, high, low, close);
