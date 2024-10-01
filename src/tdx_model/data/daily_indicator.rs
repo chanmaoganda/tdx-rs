@@ -1,27 +1,31 @@
 use serde::{Deserialize, Serialize};
 use ta::indicators::MovingAverageConvergenceDivergenceOutput as MACD;
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShortIndicator {
+    pub date: u32,
     pub dif: f64,
     pub dea: f64,
     pub macd: f64,
 }
 
 /// we prefix macd with a double value to match our need in tdx pattern
-impl From<MACD> for ShortIndicator {
-    fn from(value: MACD) -> Self {
+impl From<(u32, MACD)> for ShortIndicator {
+    fn from(value: (u32, MACD)) -> Self {
+        let (date, indicator) = value.into();
+        let (dif, dea, macd) = indicator.into();
         Self {
-            dif: value.macd,
-            dea: value.signal,
-            macd: value.histogram * 2f64,
+            date,
+            dif,
+            dea,
+            macd: macd * 2f64,
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CombinedIndicator {
+    pub date: u32,
     pub dif: f64,
     pub dea: f64,
     pub macd: f64,
@@ -31,16 +35,20 @@ pub struct CombinedIndicator {
 }
 
 /// we prefix macd with a double value to match our need in tdx pattern
-impl From<(MACD, MACD)> for CombinedIndicator {
-    fn from(value: (MACD, MACD)) -> Self {
-        let (short, long) = value;
+impl From<(u32, MACD, MACD)> for CombinedIndicator {
+    fn from(value: (u32, MACD, MACD)) -> Self {
+        let (date, short, long) = value;
+        let (dif, dea, macd) = short.into();
+        let (dif_2, dea_2, macd_2) = long.into();
+
         Self {
-            dif: short.macd,
-            dea: short.signal,
-            macd: short.histogram * 2f64,
-            dif_2: long.macd,
-            dea_2: long.signal,
-            macd_2: long.histogram * 2f64,
+            date,
+            dif,
+            dea,
+            macd: macd * 2f64,
+            dif_2,
+            dea_2,
+            macd_2: macd_2 * 2f64,
         }
     }
 }

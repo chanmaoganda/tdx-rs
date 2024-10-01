@@ -1,4 +1,8 @@
-use std::{fs::File, io::{Read, Seek, SeekFrom}, path::Path};
+use std::{
+    fs::File,
+    io::{Read, Seek, SeekFrom},
+    path::Path,
+};
 
 use byteorder::ByteOrder;
 
@@ -27,8 +31,8 @@ impl DayLineBuilder {
         }
 
         let pos_offset = (self.max_days * DAY_SIZE as u64) as i64;
-        self.file.seek( SeekFrom::End(0 - pos_offset) ).unwrap();
-        
+        self.file.seek(SeekFrom::End(0 - pos_offset)).unwrap();
+
         self
     }
 
@@ -51,14 +55,11 @@ impl DayLineBuilder {
 
         DayLine::new(day_line)
     }
-
 }
-
 
 #[test]
 fn builder_test() -> anyhow::Result<()> {
-    let builder = DayLineBuilder::from_path("../shlday/sh000001.day")?
-        .query_days(10000);
+    let builder = DayLineBuilder::from_path("../shlday/sh000001.day")?.query_days(10000);
     let day_line = builder.build();
     dbg!(day_line.data.len());
     Ok(())

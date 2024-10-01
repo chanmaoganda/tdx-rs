@@ -1,4 +1,4 @@
-use crate::{DailyData, ShortIndicator, CombinedIndicator};
+use crate::{CombinedIndicator, DailyData, ShortIndicator};
 
 use ta::indicators::MovingAverageConvergenceDivergence as MACD;
 use ta::Next;
@@ -10,9 +10,11 @@ pub fn short_macd(data: &[DailyData]) -> Vec<ShortIndicator> {
     let mut indicators = Vec::new();
     let (fast, slow, signal) = INDICATOR_PARAMS.into();
     let mut macd = MACD::new(fast, slow, signal).unwrap();
-    let close_data = data.iter().map(|data| data.close);
-    for close in close_data {
-        let indicator = macd.next(close).into();
+
+    let date_and_close = data.iter().map(|data| (data.date, data.close));
+    for (date, close) in date_and_close {
+        let output = macd.next(close);
+        let indicator = (date, output).into();
         indicators.push(indicator);
     }
     indicators
@@ -27,9 +29,9 @@ pub fn combined_macd(data: &[DailyData]) -> Vec<CombinedIndicator> {
     let (fast, slow, signal) = DOUBLE_INDICATOR_PARAMS.into();
     let mut long_macd = MACD::new(fast, slow, signal).unwrap();
 
-    let close_data = data.iter().map(|data| data.close);
-    for close in close_data {
-        let combined_indicator = (short_macd.next(close), long_macd.next(close)).into();
+    let date_and_close = data.iter().map(|data| (data.date, data.close));
+    for (date, close) in date_and_close {
+        let combined_indicator = (date, short_macd.next(close), long_macd.next(close)).into();
         indicators.push(combined_indicator);
     }
     indicators
@@ -42,8 +44,7 @@ mod tests {
     use super::*;
     #[test]
     fn short_macd_test() {
-        
-        let file = "../shlday/sh000001.day";
+        let file = "../shlday/sh600000.day";
         const QUERY_DAYS: u64 = 300;
 
         let day_line: Vec<DailyData> = DayLineBuilder::from_path(file)
@@ -53,8 +54,38 @@ mod tests {
             .into();
         let macd = crate::short_macd(&day_line);
 
-        let display_data = day_line.iter().zip(macd).collect::<Vec<(&DailyData, ShortIndicator)>>();
-        let selected = display_data.iter().skip(280).collect::<Vec<&(&DailyData, ShortIndicator)>>();
+        let display_data = day_line
+            .iter()
+            .zip(macd)
+            .collect::<Vec<(&DailyData, ShortIndicator)>>();
+        let selected = display_data
+            .iter()
+            .skip(280)
+            .collect::<Vec<&(&DailyData, ShortIndicator)>>();
+        dbg!(selected);
+    }
+
+    #[test]
+    fn combined_macd_test() {
+        let file = "../data/shlday/sh600000.day";
+        const QUERY_DAYS: u64 = 300;
+
+        let day_line: Vec<DailyData> = DayLineBuilder::from_path(file)
+            .unwrap()
+            .query_days(QUERY_DAYS)
+            .build()
+            .into();
+        let macd = crate::combined_macd(&day_line);
+        dbg!(macd.len());
+
+        let display_data = day_line
+            .iter()
+            .zip(macd)
+            .collect::<Vec<(&DailyData, CombinedIndicator)>>();
+        let selected = display_data
+            .iter()
+            .skip(180)
+            .collect::<Vec<&(&DailyData, CombinedIndicator)>>();
         dbg!(selected);
     }
 }
