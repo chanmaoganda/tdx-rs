@@ -34,3 +34,27 @@ pub fn combined_macd(data: &[DailyData]) -> Vec<CombinedIndicator> {
     }
     indicators
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::DayLineBuilder;
+
+    use super::*;
+    #[test]
+    fn short_macd_test() {
+        
+        let file = "../shlday/sh000001.day";
+        const QUERY_DAYS: u64 = 300;
+
+        let day_line: Vec<DailyData> = DayLineBuilder::from_path(file)
+            .unwrap()
+            .query_days(QUERY_DAYS)
+            .build()
+            .into();
+        let macd = crate::short_macd(&day_line);
+
+        let display_data = day_line.iter().zip(macd).collect::<Vec<(&DailyData, ShortIndicator)>>();
+        let selected = display_data.iter().skip(280).collect::<Vec<&(&DailyData, ShortIndicator)>>();
+        dbg!(selected);
+    }
+}
