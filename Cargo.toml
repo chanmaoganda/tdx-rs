@@ -1,6 +1,6 @@
 [package]
 name = "tdx-rs"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["chanmaoganda <avaniawang@outlook.com>"]
 description = "A Rust library for parsing TDX files"
