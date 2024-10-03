@@ -11,10 +11,12 @@ impl DayLine {
     pub fn new(data: Vec<DailyData>) -> Self {
         Self { data }
     }
-}
 
-impl From<DayLine> for Vec<DailyData> {
-    fn from(val: DayLine) -> Self {
-        val.data
+    pub fn inner(self) -> Vec<DailyData> {
+        self.data
+    }
+
+    pub fn inner_ref(&self) -> &[DailyData] {
+        self.data.as_ref()
     }
 }

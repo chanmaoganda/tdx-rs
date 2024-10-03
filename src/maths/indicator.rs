@@ -1,4 +1,5 @@
-use crate::{CombinedIndicator, DailyData, FullDailyData, ShortIndicator};
+use crate::tdx_model::{DayLine, FullDailyData};
+use crate::{CombinedIndicatorDayLine, ShortIndicatorDayLine};
 
 use ta::indicators::MovingAverageConvergenceDivergence as MACD;
 use ta::Next;
@@ -6,21 +7,23 @@ use ta::Next;
 const INDICATOR_PARAMS: [usize; 3] = [12, 26, 9];
 const DOUBLE_INDICATOR_PARAMS: [usize; 3] = [24, 52, 18];
 
-pub fn short_macd(data: &[DailyData]) -> Vec<ShortIndicator> {
+pub fn short_macd(line: &DayLine) -> ShortIndicatorDayLine {
     let mut indicators = Vec::new();
     let (fast, slow, signal) = INDICATOR_PARAMS.into();
     let mut macd = MACD::new(fast, slow, signal).unwrap();
 
-    let date_and_close = data.iter().map(|data| (data.date, data.close));
+    let date_and_close = line.inner_ref()
+        .iter()
+        .map(|data| (data.date, data.close));
     for (date, close) in date_and_close {
         let output = macd.next(close);
         let indicator = (date, output).into();
         indicators.push(indicator);
     }
-    indicators
+    ShortIndicatorDayLine::new(indicators)
 }
 
-pub fn combined_macd(data: &[DailyData]) -> Vec<CombinedIndicator> {
+pub fn combined_macd(line: &DayLine) -> CombinedIndicatorDayLine {
     let mut indicators = Vec::new();
 
     let (fast, slow, signal) = INDICATOR_PARAMS.into();
@@ -29,44 +32,45 @@ pub fn combined_macd(data: &[DailyData]) -> Vec<CombinedIndicator> {
     let (fast, slow, signal) = DOUBLE_INDICATOR_PARAMS.into();
     let mut long_macd = MACD::new(fast, slow, signal).unwrap();
 
-    let date_and_close = data.iter().map(|data| (data.date, data.close));
+    let date_and_close = line.inner_ref().iter().map(|data| (data.date, data.close));
     for (date, close) in date_and_close {
         let combined_indicator = (date, short_macd.next(close), long_macd.next(close)).into();
         indicators.push(combined_indicator);
     }
-    indicators
+    CombinedIndicatorDayLine::new(indicators)
 }
 
-pub fn full_data(data: Vec<DailyData>) -> Vec<FullDailyData> {
-    let combined_indicators = combined_macd(data.as_ref());
+pub fn full_data(line: DayLine) -> Vec<FullDailyData> {
+    let combined_indicators = combined_macd(&line);
     combined_indicators
+        .inner()
         .into_iter()
-        .zip(data)
+        .zip(line.inner())
         .map(|(indicator, daily_data)| (daily_data, indicator).into())
         .collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::DayLineBuilder;
+    use crate::{tdx_model::DayLineBuilder, CombinedIndicator, DailyData, ShortIndicator};
 
-    use super::*;
     #[test]
     fn short_macd_test() {
         let file = "../shlday/sh600000.day";
         const QUERY_DAYS: u64 = 300;
 
-        let day_line: Vec<DailyData> = DayLineBuilder::from_path(file)
+        let day_line = DayLineBuilder::from_path(file)
             .unwrap()
             .query_days(QUERY_DAYS)
-            .build()
-            .into();
+            .build();
         let macd = crate::short_macd(&day_line);
 
         let display_data = day_line
+            .inner_ref()
             .iter()
-            .zip(macd)
+            .zip(macd.inner())
             .collect::<Vec<(&DailyData, ShortIndicator)>>();
+
         let selected = display_data
             .iter()
             .skip(280)
@@ -79,17 +83,17 @@ mod tests {
         let file = "../data/shlday/sh600000.day";
         const QUERY_DAYS: u64 = 300;
 
-        let day_line: Vec<DailyData> = DayLineBuilder::from_path(file)
+        let day_line = DayLineBuilder::from_path(file)
             .unwrap()
             .query_days(QUERY_DAYS)
-            .build()
-            .into();
+            .build();
         let macd = crate::combined_macd(&day_line);
-        dbg!(macd.len());
+        dbg!(macd.inner_ref().len());
 
         let display_data = day_line
+            .inner_ref()
             .iter()
-            .zip(macd)
+            .zip(macd.inner())
             .collect::<Vec<(&DailyData, CombinedIndicator)>>();
         let selected = display_data
             .iter()
