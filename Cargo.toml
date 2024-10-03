@@ -16,7 +16,6 @@ serde = { version = "^1.0", features = ["derive"] }
 ta = { version = "0.5.0" }
 
 [features]
-default = []
+default = ["analysis"]
 # macd = ["dep:ta"]
-macd = []
-origin_data = []
+analysis = []

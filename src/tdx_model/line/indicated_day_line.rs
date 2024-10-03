@@ -2,6 +2,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::tdx_model::{CombinedIndicator, ShortIndicator};
 
+#[cfg(feature = "analysis")]
+use crate::tdx_model::Indicator;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShortIndicatorDayLine {
     pub data: Vec<ShortIndicator>,
@@ -24,6 +27,15 @@ impl ShortIndicatorDayLine {
     pub fn inner_ref(&self) -> &[ShortIndicator] {
         self.data.as_ref()
     }
+
+    #[cfg(feature = "analysis")]
+    pub fn short_indicator(&self) -> Vec<Indicator> {
+        self.data.iter()
+            .map(|data| 
+                (data.date, data.macd).into()
+            )
+            .collect()
+    }
 }
 
 impl CombinedIndicatorDayLine {
@@ -37,5 +49,23 @@ impl CombinedIndicatorDayLine {
 
     pub fn inner_ref(&self) -> &[CombinedIndicator] {
         self.data.as_ref()
+    }
+
+    #[cfg(feature = "analysis")]
+    pub fn short_indicator(&self) -> Vec<Indicator> {
+        self.data.iter()
+            .map(|data| 
+                (data.date, data.macd).into()
+            )
+            .collect()
+    }
+
+    #[cfg(feature = "analysis")]
+    pub fn long_indicator(&self) -> Vec<Indicator> {
+        self.data.iter()
+            .map(|data| 
+                (data.date, data.macd_2).into()
+            )
+            .collect()
     }
 }
