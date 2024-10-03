@@ -8,7 +8,8 @@ use byteorder::ByteOrder;
 
 use crate::tdx_model::{data::DailyData, DayLine};
 
-const DAY_SIZE: usize = 32;
+/// for each day, there are 8 numbers, 4 bytes each
+pub const DAY_SIZE: usize = 32;
 
 #[derive(Debug)]
 pub struct DayLineBuilder {
@@ -59,7 +60,7 @@ impl DayLineBuilder {
 
 #[test]
 fn builder_test() -> anyhow::Result<()> {
-    let builder = DayLineBuilder::from_path("../shlday/sh000001.day")?.query_days(10000);
+    let builder = DayLineBuilder::from_path("../data/shlday/sh600000.day")?.query_days(400);
     let day_line = builder.build();
     dbg!(day_line.data.len());
     Ok(())
