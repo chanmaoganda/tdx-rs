@@ -74,14 +74,17 @@ use tdx_rs::DayLineBuilder;
 /// tdx-rs = "0.1.3"
 
 fn main() -> anyhow::Result<()> {
-    let directory = "shlday";
-    let pattern = format!("../data/{}/*.day", directory);
+    let directory = "sh"; // `sh` or `sz` or sth
+    let pattern = format!(
+        "C:/Users/avania/AppData/Local/new_tdx/vipdoc/{}/lday/*.day",
+        directory
+    );
     let mut files = Vec::new();
     for entry in glob(&pattern).expect("Failed to read glob pattern") {
         let path = entry?.to_str().unwrap().to_owned();
         files.push(path);
     }
-
+    let code_matcher = Regex::new(r"sh6\d{5}").unwrap();
     const QUERY_DAYS: usize = 300;
     const MATCHED_DAYS: usize = 200;
 
@@ -97,12 +100,14 @@ fn main() -> anyhow::Result<()> {
 
         let combined_macds = tdx_rs::full_data(day_line);
 
-        let code = &file[15..23];
+        let matcher = code_matcher.find(file).unwrap();
+        let code = matcher.as_str();
+
         let indicator_name = format!("../data/{}_indicator/{}_indicator.csv", directory, code);
         // dbg!(&file);
         // dbg!(&indicator_name);
         let mut writer = csv::Writer::from_path(&indicator_name).unwrap();
-        
+
         for data in combined_macds {
             writer.serialize(data).unwrap();
         }
@@ -112,4 +117,24 @@ fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+```
+
+#### Spliting CombinedIndicatorDayLine into two SingleIndicatorDayLine
+- suppose u have dumped the day files to csv files
+```rust
+let mut values = csv::Reader::from_path("../data/sh_indicator/shxxxxxx_indicator.csv")?;
+let indicators: Vec<tdx_rs::CombinedIndicator> =
+    values.deserialize().map(|value| value.unwrap()).collect();
+let combined_day_line = tdx_rs::CombinedIndicatorDayLine::new(indicators);
+let (short_day_line, long_day_line) = combined_day_line.split_single_indicator();
+
+assert_eq!(short_day_line.inner_ref().len(), 300);
+assert_eq!(long_day_line.inner_ref().len(), 300);
+```
+- otherwise use day files directly
+```rust
+let builder = IndicatorBuilder::from_path("../data/shlday/sh600000.day")?.query_days(400);
+let combined_indicator_line = builder.build_combined_indicator();
+let (short_day_line, long_day_line) = combined_day_line.split_single_indicator();
+println!("short len: {}, long len: {}", short_day_line.inner_ref().len(), long_day_line.inner_ref().len());
 ```
