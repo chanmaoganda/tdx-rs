@@ -1,5 +1,5 @@
 use crate::tdx_model::{DayLine, FullDailyData};
-use crate::{CombinedIndicatorDayLine, ShortIndicatorDayLine};
+use crate::{CombinedIndicatorDayLine, SingleIndicatorDayLine};
 
 use ta::indicators::MovingAverageConvergenceDivergence as MACD;
 use ta::Next;
@@ -7,7 +7,7 @@ use ta::Next;
 const INDICATOR_PARAMS: [usize; 3] = [12, 26, 9];
 const DOUBLE_INDICATOR_PARAMS: [usize; 3] = [24, 52, 18];
 
-pub fn short_macd(line: &DayLine) -> ShortIndicatorDayLine {
+pub fn short_macd(line: &DayLine) -> SingleIndicatorDayLine {
     let mut indicators = Vec::new();
     let (fast, slow, signal) = INDICATOR_PARAMS.into();
     let mut macd = MACD::new(fast, slow, signal).unwrap();
@@ -20,7 +20,7 @@ pub fn short_macd(line: &DayLine) -> ShortIndicatorDayLine {
         let indicator = (date, output).into();
         indicators.push(indicator);
     }
-    ShortIndicatorDayLine::new(indicators)
+    SingleIndicatorDayLine::new(indicators)
 }
 
 pub fn combined_macd(line: &DayLine) -> CombinedIndicatorDayLine {
@@ -52,7 +52,7 @@ pub fn full_data(line: DayLine) -> Vec<FullDailyData> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{tdx_model::DayLineBuilder, CombinedIndicator, DailyData, ShortIndicator};
+    use crate::{tdx_model::DayLineBuilder, CombinedIndicator, DailyData, SingleIndicator};
 
     #[test]
     fn short_macd_test() {
@@ -69,12 +69,12 @@ mod tests {
             .inner_ref()
             .iter()
             .zip(macd.inner())
-            .collect::<Vec<(&DailyData, ShortIndicator)>>();
+            .collect::<Vec<(&DailyData, SingleIndicator)>>();
 
         let selected = display_data
             .iter()
             .skip(280)
-            .collect::<Vec<&(&DailyData, ShortIndicator)>>();
+            .collect::<Vec<&(&DailyData, SingleIndicator)>>();
         dbg!(selected);
     }
 

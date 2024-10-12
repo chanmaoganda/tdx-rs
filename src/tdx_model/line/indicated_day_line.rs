@@ -1,30 +1,25 @@
 use serde::{Deserialize, Serialize};
 
-use crate::tdx_model::{CombinedIndicator, ShortIndicator};
+use crate::tdx_model::{CombinedIndicator, SingleIndicator};
 
 #[cfg(feature = "analysis")]
 use crate::tdx_model::Indicator;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ShortIndicatorDayLine {
-    pub data: Vec<ShortIndicator>,
+pub struct SingleIndicatorDayLine {
+    pub data: Vec<SingleIndicator>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CombinedIndicatorDayLine {
-    pub data: Vec<CombinedIndicator>,
-}
-
-impl ShortIndicatorDayLine {
-    pub fn new(data: Vec<ShortIndicator>) -> Self {
+impl SingleIndicatorDayLine {
+    pub fn new(data: Vec<SingleIndicator>) -> Self {
         Self { data }
     }
 
-    pub fn inner(self) -> Vec<ShortIndicator> {
+    pub fn inner(self) -> Vec<SingleIndicator> {
         self.data
     }
 
-    pub fn inner_ref(&self) -> &[ShortIndicator] {
+    pub fn inner_ref(&self) -> &[SingleIndicator] {
         self.data.as_ref()
     }
 
@@ -32,10 +27,15 @@ impl ShortIndicatorDayLine {
     pub fn short_indicator(&self) -> Vec<Indicator> {
         self.data.iter()
             .map(|data| 
-                (data.date, data.macd).into()
+                Indicator::new(data.date, data.macd)
             )
             .collect()
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CombinedIndicatorDayLine {
+    pub data: Vec<CombinedIndicator>,
 }
 
 impl CombinedIndicatorDayLine {
@@ -55,7 +55,7 @@ impl CombinedIndicatorDayLine {
     pub fn short_indicator(&self) -> Vec<Indicator> {
         self.data.iter()
             .map(|data| 
-                (data.date, data.macd).into()
+                Indicator::new(data.date, data.macd)
             )
             .collect()
     }
@@ -64,8 +64,20 @@ impl CombinedIndicatorDayLine {
     pub fn long_indicator(&self) -> Vec<Indicator> {
         self.data.iter()
             .map(|data| 
-                (data.date, data.macd_2).into()
+                Indicator::new(data.date, data.macd_2)
             )
             .collect()
+    }
+
+    pub fn split_single_indicator(self) -> (SingleIndicatorDayLine, SingleIndicatorDayLine) {
+        let mut short_line = Vec::with_capacity(self.data.len());
+        let mut long_line = Vec::with_capacity(self.data.len());
+        self.data.into_iter()
+            .map(|data| data.split())
+            .for_each(|(short, long)| {
+                short_line.push(short);
+                long_line.push(long);
+            });
+        (SingleIndicatorDayLine::new(short_line), SingleIndicatorDayLine::new(long_line))
     }
 }

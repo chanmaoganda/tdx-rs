@@ -1,6 +1,6 @@
 use std::{fs::File, path::Path};
 
-use crate::{CombinedIndicatorDayLine, FullDailyData, ShortIndicatorDayLine};
+use crate::{CombinedIndicatorDayLine, FullDailyData, SingleIndicatorDayLine};
 
 use super::{DayLineBuilder, DAY_SIZE};
 
@@ -22,7 +22,7 @@ impl IndicatorBuilder {
         Self { day_line_builder: inner_builder }
     }
 
-    pub fn build_short_indicator(self) -> ShortIndicatorDayLine {
+    pub fn build_short_indicator(self) -> SingleIndicatorDayLine {
         let day_line = self.day_line_builder.build();
         crate::short_macd(&day_line)
     }
