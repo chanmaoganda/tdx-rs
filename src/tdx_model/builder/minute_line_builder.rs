@@ -1,20 +1,16 @@
-use std::{
-    fs::File,
-    io::{Read, Seek, SeekFrom},
-    path::Path,
-};
+use std::{fs::File, io::{Read, Seek, SeekFrom}, path::Path};
 
 use byteorder::ByteOrder;
 
-use crate::{tdx_model::{data::DailyData, DayLine}, DAY_SIZE};
+use crate::{MinuteData, MinuteLine, DAY_SIZE};
 
 #[derive(Debug)]
-pub struct DayLineBuilder {
+pub struct MinuteLineBuilder {
     pub file: File,
     pub max_blocks: u64,
 }
 
-impl DayLineBuilder {
+impl MinuteLineBuilder {
     pub fn from_path<P: AsRef<Path>>(path: P) -> anyhow::Result<Self> {
         let file = File::open(path.as_ref())?;
         let max_blocks = std::fs::metadata(path.as_ref())?.len() / (DAY_SIZE as u64);
@@ -34,31 +30,24 @@ impl DayLineBuilder {
         self
     }
 
-    pub fn build(mut self) -> DayLine {
+    pub fn build(mut self) -> MinuteLine {
         let mut buffer = [0u8; DAY_SIZE];
-        let mut day_line = Vec::with_capacity(self.max_blocks as usize);
+        let mut minute_line = Vec::with_capacity(self.max_blocks as usize);
 
         for _ in 0..self.max_blocks {
             self.file.read_exact(buffer.as_mut()).unwrap();
-            let date = byteorder::LE::read_u32(&buffer[0..4]);
+            let date = byteorder::LE::read_u16(&buffer[0..2]);
+            let minute = byteorder::LE::read_u16(&buffer[2..4]);
             let open = byteorder::LE::read_u32(&buffer[4..8]) as f64 / 100f64;
             let high = byteorder::LE::read_u32(&buffer[8..12]) as f64 / 100f64;
             let low = byteorder::LE::read_u32(&buffer[12..16]) as f64 / 100f64;
             let close = byteorder::LE::read_u32(&buffer[16..20]) as f64 / 100f64;
             // last 12 bytes consists of 4 bytes of turnover, 4 bytes of volume, and last 4 bytes reserved
             // those bytes are not needed now, so we drop these bytes
-            let daily_data = DailyData::new(date, open, high, low, close);
-            day_line.push(daily_data);
+            let daily_data = MinuteData::new(date, minute, open, high, low, close);
+            minute_line.push(daily_data);
         }
 
-        DayLine::new(day_line)
+        MinuteLine::new(minute_line)
     }
-}
-
-#[test]
-fn builder_test() -> anyhow::Result<()> {
-    let builder = DayLineBuilder::from_path("../data/shlday/sh600000.day")?.query_blocks(400);
-    let day_line = builder.build();
-    dbg!(day_line.data.len());
-    Ok(())
 }

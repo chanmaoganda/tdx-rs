@@ -1,8 +1,8 @@
 use std::{fs::File, path::Path};
 
-use crate::{CombinedIndicatorDayLine, FullDailyData, SingleIndicatorDayLine};
+use crate::{CombinedIndicatorDayLine, FullDailyData, SingleIndicatorDayLine, DAY_SIZE};
 
-use super::{DayLineBuilder, DAY_SIZE};
+use super::DayLineBuilder;
 
 #[derive(Debug)]
 pub struct IndicatorBuilder {
@@ -13,13 +13,15 @@ impl IndicatorBuilder {
     pub fn from_path<P: AsRef<Path>>(path: P) -> anyhow::Result<Self> {
         let file = File::open(path.as_ref())?;
         let max_days = std::fs::metadata(path.as_ref())?.len() / (DAY_SIZE as u64);
-        let day_line_builder = DayLineBuilder {file, max_days};
-        Ok(Self {day_line_builder})
+        let day_line_builder = DayLineBuilder { file, max_blocks: max_days };
+        Ok(Self { day_line_builder })
     }
 
     pub fn query_days(self, days: u64) -> Self {
-        let inner_builder = self.day_line_builder.query_days(days);
-        Self { day_line_builder: inner_builder }
+        let inner_builder = self.day_line_builder.query_blocks(days);
+        Self {
+            day_line_builder: inner_builder,
+        }
     }
 
     pub fn build_short_indicator(self) -> SingleIndicatorDayLine {
@@ -37,8 +39,6 @@ impl IndicatorBuilder {
         crate::full_data(day_line)
     }
 }
-
-
 
 #[cfg(test)]
 mod indicator_tests {

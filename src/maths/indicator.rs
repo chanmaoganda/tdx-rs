@@ -12,9 +12,7 @@ pub fn short_macd(line: &DayLine) -> SingleIndicatorDayLine {
     let (fast, slow, signal) = INDICATOR_PARAMS.into();
     let mut macd = MACD::new(fast, slow, signal).unwrap();
 
-    let date_and_close = line.inner_ref()
-        .iter()
-        .map(|data| (data.date, data.close));
+    let date_and_close = line.inner_ref().iter().map(|data| (data.date, data.close));
     for (date, close) in date_and_close {
         let output = macd.next(close);
         let indicator = (date, output).into();
@@ -61,7 +59,7 @@ mod tests {
 
         let day_line = DayLineBuilder::from_path(file)
             .unwrap()
-            .query_days(QUERY_DAYS)
+            .query_blocks(QUERY_DAYS)
             .build();
         let macd = crate::short_macd(&day_line);
 
@@ -85,7 +83,7 @@ mod tests {
 
         let day_line = DayLineBuilder::from_path(file)
             .unwrap()
-            .query_days(QUERY_DAYS)
+            .query_blocks(QUERY_DAYS)
             .build();
         let macd = crate::combined_macd(&day_line);
         dbg!(macd.inner_ref().len());

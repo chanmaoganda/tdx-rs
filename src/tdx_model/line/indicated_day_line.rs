@@ -27,10 +27,9 @@ impl SingleIndicatorDayLine {
 
     #[cfg(feature = "analysis")]
     pub fn single_indicator(&self) -> Vec<Indicator> {
-        self.data.iter()
-            .map(|data| 
-                Indicator::new(data.date, data.macd)
-            )
+        self.data
+            .iter()
+            .map(|data| Indicator::new(data.date, data.macd))
             .collect()
     }
 }
@@ -63,32 +62,34 @@ impl CombinedIndicatorDayLine {
 
     #[cfg(feature = "analysis")]
     pub fn short_indicator(&self) -> Vec<Indicator> {
-        self.data.iter()
-            .map(|data| 
-                Indicator::new(data.date, data.macd)
-            )
+        self.data
+            .iter()
+            .map(|data| Indicator::new(data.date, data.macd))
             .collect()
     }
 
     #[cfg(feature = "analysis")]
     pub fn long_indicator(&self) -> Vec<Indicator> {
-        self.data.iter()
-            .map(|data| 
-                Indicator::new(data.date, data.macd_2)
-            )
+        self.data
+            .iter()
+            .map(|data| Indicator::new(data.date, data.macd_2))
             .collect()
     }
 
     pub fn split_single_indicator(self) -> (SingleIndicatorDayLine, SingleIndicatorDayLine) {
         let mut short_line = Vec::with_capacity(self.data.len());
         let mut long_line = Vec::with_capacity(self.data.len());
-        self.data.into_iter()
+        self.data
+            .into_iter()
             .map(|data| data.split())
             .for_each(|(short, long)| {
                 short_line.push(short);
                 long_line.push(long);
             });
-        (SingleIndicatorDayLine::new(short_line), SingleIndicatorDayLine::new(long_line))
+        (
+            SingleIndicatorDayLine::new(short_line),
+            SingleIndicatorDayLine::new(long_line),
+        )
     }
 }
 

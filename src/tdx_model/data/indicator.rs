@@ -6,10 +6,7 @@ pub struct Indicator {
 
 impl Indicator {
     pub fn new(date: u32, value: f64) -> Self {
-        Self {
-            date,
-            value,
-        }
+        Self { date, value }
     }
 }
 
