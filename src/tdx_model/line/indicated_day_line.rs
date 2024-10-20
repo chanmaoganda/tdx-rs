@@ -5,6 +5,8 @@ use crate::tdx_model::{CombinedIndicator, SingleIndicator};
 #[cfg(feature = "analysis")]
 use crate::tdx_model::Indicator;
 
+use super::QueryLine;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SingleIndicatorDayLine {
     pub data: Vec<SingleIndicator>,
@@ -24,12 +26,20 @@ impl SingleIndicatorDayLine {
     }
 
     #[cfg(feature = "analysis")]
-    pub fn short_indicator(&self) -> Vec<Indicator> {
+    pub fn single_indicator(&self) -> Vec<Indicator> {
         self.data.iter()
             .map(|data| 
                 Indicator::new(data.date, data.macd)
             )
             .collect()
+    }
+}
+
+impl QueryLine for SingleIndicatorDayLine {
+    type Output = SingleIndicator;
+
+    fn query_data(&self, range: std::ops::Range<usize>) -> &[Self::Output] {
+        &self.data[range]
     }
 }
 
@@ -79,5 +89,13 @@ impl CombinedIndicatorDayLine {
                 long_line.push(long);
             });
         (SingleIndicatorDayLine::new(short_line), SingleIndicatorDayLine::new(long_line))
+    }
+}
+
+impl QueryLine for CombinedIndicatorDayLine {
+    type Output = CombinedIndicator;
+
+    fn query_data(&self, range: std::ops::Range<usize>) -> &[Self::Output] {
+        &self.data[range]
     }
 }
